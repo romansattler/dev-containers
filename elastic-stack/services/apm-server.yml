@@ -1,0 +1,15 @@
+
+apm-server:
+  host: "0.0.0.0:8200"
+  secret_token: ${SECRET_TOKEN}
+  ssl:
+    enabled: true
+    certificate: ${ELASTIC_SSL_CERTIFICATE}
+    key: ${ELASTIC_SSL_KEY}
+
+output.elasticsearch:
+  hosts: ${ELASTICSEARCH_HOSTS}
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD} 
+  ssl.enabled: true
+  ssl.certificate_authorities: ${ELASTIC_SSL_CERTIFICATEAUTHORITIES}

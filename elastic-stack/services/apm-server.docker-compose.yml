@@ -1,0 +1,25 @@
+services:
+  apm-server:
+    container_name: apm-server
+    image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
+    user: root
+    restart: unless-stopped
+    ports:
+      - ${APM_PORT}:8200
+    volumes:
+      - ./apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    environment:
+      ELASTIC_SSL_KEY: config/certs/elastic-cert-key.pem
+      ELASTIC_SSL_CERTIFICATE: config/certs/elastic-cert.pem
+      ELASTIC_SSL_CERTIFICATEAUTHORITIES: config/certs/root-ca.pem
+      ELASTIC_USER: elastic
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      SECRET_TOKEN: ${SECRET_TOKEN}
+    secrets:
+      - source: root-ca
+        target: /usr/share/apm-server/config/certs/root-ca.pem
+      - source: elastic-cert
+        target: /usr/share/apm-server/config/certs/elastic-cert.pem
+      - source: elastic-cert-key
+        target: /usr/share/apm-server/config/certs/elastic-cert-key.pem
+    mem_limit: ${APM_MEM_LIMIT}

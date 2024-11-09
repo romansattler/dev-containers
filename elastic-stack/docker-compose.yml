@@ -1,0 +1,68 @@
+volumes:
+  es-data:
+  kibana-data:
+
+networks:
+  default:
+    name: elastic
+    external: false
+
+secrets:
+  root-ca:
+    file: ${CAROOT}/rootCA.pem
+  elastic-cert:
+    file: ./certs/elastic.pem
+  elastic-cert-key:
+    file: ./certs/elastic-key.pem
+
+services:
+  setup:
+    container_name: setup
+    extends:
+      file: services/setup.docker-compose.yml
+      service: setup
+    volumes:
+      - ${CAROOT}:/usr/share/elasticsearch/config/certs/ca
+    profiles:
+      - setup
+    depends_on:
+      es:
+        condition: service_healthy
+
+  es:
+    container_name: es
+    extends:
+      file: services/elasticsearch.docker-compose.yml
+      service: elasticsearch
+    ports:
+      - ${ES_PORT}:9200
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - ${BACKUP_DIR}:/mount/backups
+    environment:
+      node.name: es
+      discovery.type: single-node
+
+  kibana:
+    container_name: kibana
+    extends:
+      file: services/kibana.docker-compose.yml
+      service: kibana
+    depends_on:
+      es:
+        condition: service_healthy
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+    environment:
+      ELASTICSEARCH_HOSTS: '["https://es:9200"]'
+      
+  apm-server:
+    container_name: apm-server
+    extends:
+      file: services/apm-server.docker-compose.yml
+      service: apm-server
+    depends_on:
+      es:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOSTS: '["https://es:9200"]'

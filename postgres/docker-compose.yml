@@ -1,0 +1,38 @@
+volumes:
+  pg-data:
+  pg-admin-data:
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  pg-admin:
+    container_name: pg-admin
+    image: dpage/pgadmin4:8
+    restart: unless-stopped
+    ports:
+      - 6432:80
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+      - pd-admin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PG_ADMIN_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PG_ADMIN_PASSWORD}
+      PGADMIN_DISABLE_POSTFIX: true
+    depends_on:
+      postgres:
+        condition: service_healthy

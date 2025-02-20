@@ -1,10 +1,17 @@
+volumes:
+  mssql-data:
+
 services:
   sql-server:
     container_name: sql-server
     image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
     restart: unless-stopped
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: P455w0rd
+    volumes:
+      - mssql-data:/var/opt/mssql/data/
+      - ./backup:/var/opt/mssql/data/backup/
     ports:
       - 1433:1433
